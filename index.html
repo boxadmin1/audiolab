@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Radio Station | Analog Lab v5.9</title>
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-green: #39ff14;
+            --neon-red: #ff3131;
+            --bg: #0a0a0a;
+            --panel: #1a1a1a;
+            --border: #333;
+        }
+
+        body {
+            background: var(--bg);
+            color: #eee;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #boot-screen {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #000; z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        header {
+            padding: 10px 20px;
+            background: #000;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        main { display: flex; flex: 1; overflow: hidden; }
+
+        #modules {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .module-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #444;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        #sidebar {
+            width: 380px;
+            background: #111;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .monitor-box { background: #000; border: 1px solid #222; padding: 10px; }
+        canvas { width: 100%; height: 200px; display: block; } /* Larger Spectrum */
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background: #050505;
+            color: var(--neon-blue);
+            border: 1px solid #444;
+            padding: 10px;
+            font-family: inherit;
+            margin-bottom: 8px;
+            outline: none;
+            resize: none;
+        }
+
+        button {
+            background: #222;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        button.on { background: var(--neon-blue); color: black; font-weight: bold; }
+        button.stop-btn { background: var(--neon-red); color: white; border-color: var(--neon-red); }
+
+        .vu-container { height: 10px; background: #000; width: 100%; margin-top: 5px; border: 1px solid #222; }
+        .vu-bar { height: 100%; width: 0%; background: var(--neon-green); transition: width 0.1s; }
+
+        .label { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px;}
+        input[type=range] { width: 100%; accent-color: var(--neon-blue); cursor: pointer; margin-bottom: 10px;}
+        
+        .control-group { display: flex; gap: 15px; align-items: center; }
+        .control-item { flex: 1; }
+    </style>
+</head>
+<body>
+
+<div id="boot-screen">
+    <button onclick="bootSystem()" style="padding: 30px; border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent;">[ START CONSOLE V5.9 ]</button>
+</div>
+
+<header>
+    <div>RADIO UNIT <span id="tx-indicator" style="color:#555">● STANDBY</span></div>
+    <div style="font-size: 11px; color: var(--neon-green);">PERFORMANCE MODE</div>
+</header>
+
+<main>
+    <div id="modules">
+        <div class="module-card">
+            <div class="module-header">
+                <span class="label">01. MIC INPUT</span>
+                <button id="micToggle" onclick="toggleMic()">Activate</button>
+            </div>
+            <div class="vu-container"><div id="micVU" class="vu-bar"></div></div>
+        </div>
+
+        <div class="module-card">
+            <div class="module-header">
+                <span class="label">02. MORSE ENCODER</span>
+                <div style="display:flex; gap:10px;">
+                    <label class="label" style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="morseLoop"> LOOP</label>
+                    <button id="morseBtn" onclick="handleMorse()">Transmit</button>
+                </div>
+            </div>
+            <textarea id="morseText" rows="1" placeholder="Enter message..."></textarea>
+            <div class="control-group">
+                <div class="control-item">
+                    <span class="label">WPM SPEED: <span id="mSpeedVal">20</span></span>
+                    <input type="range" id="morseSpeed" min="5" max="60" value="20" oninput="mSpeedVal.innerText=this.value">
+                </div>
+            </div>
+            <div class="vu-container"><div id="morseVU" class="vu-bar"></div></div>
+        </div>
+
+        <div class="module-card">
+            <div class="module-header">
+                <span class="label">03. VOICE SYNTH (TTS)</span>
+                <div style="display:flex; gap:10px;">
+                    <label class="label" style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="ttsLoop"> LOOP</label>
+                    <button id="ttsBtn" onclick="handleTTS()">Speak</button>
+                </div>
+            </div>
+            <textarea id="speechText" rows="1" placeholder="Enter voice text..."></textarea>
+            <div class="control-group">
+                <div class="control-item">
+                    <span class="label">RATE: <span id="tSpeedVal">1.0</span>x</span>
+                    <input type="range" id="ttsRate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="tSpeedVal.innerText=this.value">
+                </div>
+                <div class="control-item">
+                    <span class="label">PITCH: <span id="tPitchVal">1.0</span></span>
+                    <input type="range" id="ttsPitch" min="0.5" max="2.0" step="0.1" value="1.0" oninput="tPitchVal.innerText=this.value">
+                </div>
+            </div>
+            <div class="vu-container"><div id="speechVU" class="vu-bar"></div></div>
+        </div>
+
+        <div class="module-card">
+            <div class="module-header">
+                <span class="label">04. MEDIA BROADCAST</span>
+                <button id="fileBtn" onclick="toggleFilePlay()">Play File</button>
+            </div>
+            <input type="file" id="fileInput" accept="audio/*,video/*">
+            <div class="vu-container"><div id="fileVU" class="vu-bar"></div></div>
+            <audio id="hiddenAudio" style="display:none"></audio>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <div class="monitor-box">
+            <div class="label">SIGNAL SPECTRUM</div>
+            <canvas id="freqCanvas"></canvas>
+        </div>
+
+        <div class="module-card" style="margin-top:auto; border-left-color: var(--neon-red);">
+            <div class="label">MASTER OUTPUT VOLUME</div>
+            <input type="range" id="masterVol" min="0" max="1.5" step="0.01" value="1">
+            <button id="masterTX" style="width:100%; margin-top:10px; padding:15px; font-weight:bold; color:var(--neon-red);" onclick="toggleMasterTX()">XMT OFF (MUTE)</button>
+            <div class="label" style="margin-top:10px">TX POWER LEVEL</div>
+            <div class="vu-container" style="height:20px"><div id="masterVU" class="vu-bar"></div></div>
+        </div>
+    </div>
+</main>
+
+<script>
+    let audioCtx, masterGain, txSwitch, analyzer, micAn, morseAn, fileAn;
+    let isTransmitting = false;
+    let morseInterval, ttsInterval;
+
+    function bootSystem() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        analyzer = audioCtx.createAnalyser();
+        analyzer.fftSize = 512;
+        txSwitch = audioCtx.createGain();
+        txSwitch.gain.value = 0; 
+
+        micAn = audioCtx.createAnalyser();
+        morseAn = audioCtx.createAnalyser();
+        fileAn = audioCtx.createAnalyser();
+
+        masterGain.connect(analyzer);
+        analyzer.connect(txSwitch);
+        txSwitch.connect(audioCtx.destination);
+
+        const audioEl = document.getElementById('hiddenAudio');
+        const fileSource = audioCtx.createMediaElementSource(audioEl);
+        fileSource.connect(fileAn);
+        fileAn.connect(masterGain);
+
+        document.getElementById('boot-screen').style.display = 'none';
+        render();
+    }
+
+    function toggleMasterTX() {
+        isTransmitting = !isTransmitting;
+        const btn = document.getElementById('masterTX');
+        txSwitch.gain.setTargetAtTime(isTransmitting ? 1 : 0, audioCtx.currentTime, 0.05);
+        btn.innerText = isTransmitting ? "XMT ACTIVE (ON)" : "XMT OFF (MUTE)";
+        btn.style.background = isTransmitting ? "var(--neon-red)" : "#222";
+        btn.style.color = isTransmitting ? "#000" : "var(--neon-red)";
+        document.getElementById('tx-indicator').style.color = isTransmitting ? "var(--neon-red)" : "#555";
+        document.getElementById('tx-indicator').innerText = isTransmitting ? "● TRANSMITTING" : "● STANDBY";
+    }
+
+    let micStream = null;
+    function toggleMic() {
+        const btn = document.getElementById('micToggle');
+        if (!micStream) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                micStream = stream;
+                const source = audioCtx.createMediaStreamSource(stream);
+                source.connect(micAn);
+                micAn.connect(masterGain);
+                btn.innerText = "Mic ON"; btn.classList.add('on');
+            });
+        } else {
+            micStream.getTracks().forEach(t => t.stop());
+            micStream = null;
+            btn.innerText = "Activate"; btn.classList.remove('on');
+        }
+    }
+
+    function playMorse() {
+        const text = document.getElementById("morseText").value.trim().toLowerCase();
+        if(!text) return;
+        const wpm = document.getElementById("morseSpeed").value;
+        const dotTime = 1.2 / wpm; 
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.value = 750;
+        osc.connect(g); g.connect(morseAn); morseAn.connect(masterGain);
+        let t = audioCtx.currentTime;
+        g.gain.setValueAtTime(0, t);
+        for(let ch of text) {
+            let code = {a:".-",b:"-...",c:"-.-.",d:"-..",e:".",f:"..-.",g:"--.",h:"....",i:"..",j:".---",k:"-.-",l:".-..",m:"--",n:"-.",o:"---",p:".--.",q:"--.-",r:".-.",s:"...",t:"-",u:"..-",v:"...-",w:".--",x:"-..-",y:"-.--",z:"--..",1:".----",2:"..---",3:"...--",4:"....-",5:".....",6:"-....",7:"--...",8:"---..",9:"----.",0:"-----"," ":" "}[ch] || "";
+            for(let s of code) {
+                let len = (s === ".") ? dotTime : dotTime * 3;
+                g.gain.setValueAtTime(0.8, t);
+                g.gain.setValueAtTime(0, t + len);
+                t += len + dotTime;
+            }
+            t += dotTime * 2;
+        }
+        osc.start(); osc.stop(t);
+    }
+
+    function handleMorse() {
+        const btn = document.getElementById('morseBtn');
+        if (document.getElementById('morseLoop').checked) {
+            if (!morseInterval) {
+                playMorse(); morseInterval = setInterval(playMorse, 4000);
+                btn.innerText = "Stop"; btn.classList.add('stop-btn');
+            } else {
+                clearInterval(morseInterval); morseInterval = null;
+                btn.innerText = "Transmit"; btn.classList.remove('stop-btn');
+            }
+        } else { playMorse(); }
+    }
+
+    function handleTTS() {
+        const btn = document.getElementById('ttsBtn');
+        const text = document.getElementById("speechText").value;
+        if(!text.trim() || !isTransmitting) return;
+
+        const speak = () => {
+            if (speechSynthesis.speaking) return;
+            const ut = new SpeechSynthesisUtterance(text);
+            ut.rate = document.getElementById("ttsRate").value;
+            ut.pitch = document.getElementById("ttsPitch").value;
+            speechSynthesis.speak(ut);
+            document.getElementById('speechVU').style.width = "85%";
+            setTimeout(() => document.getElementById('speechVU').style.width = "0%", 1000);
+        };
+
+        if (document.getElementById('ttsLoop').checked) {
+            if (!ttsInterval) {
+                speak(); ttsInterval = setInterval(speak, 5000);
+                btn.innerText = "Stop"; btn.classList.add('stop-btn');
+            } else {
+                clearInterval(ttsInterval); ttsInterval = null;
+                btn.innerText = "Speak"; btn.classList.remove('stop-btn');
+            }
+        } else { speak(); }
+    }
+
+    function toggleFilePlay() {
+        const audioEl = document.getElementById('hiddenAudio');
+        const fileInput = document.getElementById('fileInput');
+        const btn = document.getElementById('fileBtn');
+        if (audioEl.paused) {
+            if (fileInput.files[0]) {
+                audioEl.src = URL.createObjectURL(fileInput.files[0]);
+                audioEl.play();
+                btn.innerText = "Stop"; btn.classList.add('stop-btn');
+            }
+        } else {
+            audioEl.pause();
+            btn.innerText = "Play File"; btn.classList.remove('stop-btn');
+        }
+    }
+
+    function render() {
+        updateVU(micAn, 'micVU');
+        updateVU(morseAn, 'morseVU');
+        updateVU(fileAn, 'fileVU');
+        updateVU(analyzer, 'masterVU');
+
+        const freqCanvas = document.getElementById("freqCanvas");
+        const freqCtx = freqCanvas.getContext("2d");
+        const fData = new Uint8Array(analyzer.frequencyBinCount);
+        analyzer.getByteFrequencyData(fData);
+        freqCtx.fillStyle = "#000"; freqCtx.fillRect(0,0,freqCanvas.width,freqCanvas.height);
+        for(let i=0; i<fData.length; i++) {
+            let h = (fData[i]/255) * freqCanvas.height;
+            freqCtx.fillStyle = `hsl(${200 + i/1.5}, 100%, 50%)`;
+            freqCtx.fillRect(i * 3, freqCanvas.height - h, 2, h);
+        }
+        requestAnimationFrame(render);
+    }
+
+    function updateVU(an, id) {
+        if(!an) return;
+        const data = new Uint8Array(an.frequencyBinCount);
+        an.getByteFrequencyData(data);
+        let sum = 0; for(let i=0; i<data.length; i++) sum += data[i];
+        document.getElementById(id).style.width = Math.min(100, (sum/data.length) * 7) + "%";
+    }
+
+    document.getElementById("masterVol").oninput = e => { if(masterGain) masterGain.gain.value = e.target.value; };
+</script>
+</body>
+</html>
