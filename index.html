@@ -2,369 +2,225 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Radio Station | Analog Lab v5.9</title>
+    <title>BROADCAST CONSOLE V11.0</title>
     <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-green: #39ff14;
-            --neon-red: #ff3131;
-            --bg: #0a0a0a;
-            --panel: #1a1a1a;
-            --border: #333;
-        }
-
-        body {
-            background: var(--bg);
-            color: #eee;
-            font-family: 'Courier New', monospace;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #boot-screen {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #000; z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        header {
-            padding: 10px 20px;
-            background: #000;
-            border-bottom: 2px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        main { display: flex; flex: 1; overflow: hidden; }
-
-        #modules {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid var(--border);
-        }
-
-        .module-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid #444;
-        }
-
-        .module-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        #sidebar {
-            width: 380px;
-            background: #111;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .monitor-box { background: #000; border: 1px solid #222; padding: 10px; }
-        canvas { width: 100%; height: 200px; display: block; } /* Larger Spectrum */
-
-        textarea {
-            width: 100%;
-            box-sizing: border-box;
-            background: #050505;
-            color: var(--neon-blue);
-            border: 1px solid #444;
-            padding: 10px;
-            font-family: inherit;
-            margin-bottom: 8px;
-            outline: none;
-            resize: none;
-        }
-
-        button {
-            background: #222;
-            color: white;
-            border: 1px solid #555;
-            padding: 8px 15px;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
-
-        button.on { background: var(--neon-blue); color: black; font-weight: bold; }
-        button.stop-btn { background: var(--neon-red); color: white; border-color: var(--neon-red); }
-
-        .vu-container { height: 10px; background: #000; width: 100%; margin-top: 5px; border: 1px solid #222; }
-        .vu-bar { height: 100%; width: 0%; background: var(--neon-green); transition: width 0.1s; }
-
-        .label { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px;}
-        input[type=range] { width: 100%; accent-color: var(--neon-blue); cursor: pointer; margin-bottom: 10px;}
-        
-        .control-group { display: flex; gap: 15px; align-items: center; }
-        .control-item { flex: 1; }
+        :root { --accent: #00ff41; --bg: #050a05; --panel: #0a140a; --text: #e0e0e0; --border: #1a331a; --danger: #ff3333; }
+        body.day-mode { --accent: #008800; --bg: #e0e8e0; --panel: #f0f5f0; --text: #111; --border: #99b399; --danger: #cc0000; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: #000; color: var(--text); padding: 12px 20px; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; font-weight: bold; letter-spacing: 1px; }
+        body.day-mode header { background: #fff; color: #000; }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        #deck { flex: 1; padding: 20px; overflow-y: auto; }
+        .module { background: var(--panel); border: 1px solid var(--border); border-top: 3px solid var(--border); margin-bottom: 20px; padding: 15px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .module-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 12px; padding-bottom: 8px; font-weight: bold; }
+        .ui-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: bold; letter-spacing: 1px; border-radius: 3px; transition: all 0.1s; }
+        .ui-btn:hover { background: rgba(0, 255, 65, 0.1); border-color: var(--accent); }
+        .ui-btn:active { transform: translateY(2px); }
+        .ui-btn.active { background: var(--accent) !important; color: #000 !important; border-color: var(--accent); }
+        .ui-btn.danger { color: var(--danger); border-color: var(--danger); }
+        .ui-btn.danger:hover { background: var(--danger); color: #fff; }
+        textarea { width: 100%; background: rgba(0,0,0,0.3); color: var(--accent); border: 1px solid var(--border); padding: 12px; box-sizing: border-box; font-family: inherit; font-size: 14px; border-radius: 3px; outline: none; }
+        body.day-mode textarea { background: #fff; color: #000; }
+        .vu-meter { height: 8px; background: rgba(0,0,0,0.5); width: 100%; margin: 10px 0; border: 1px solid var(--border); position: relative; overflow: hidden; border-radius: 2px; }
+        .vu-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.05s; }
+        #sidebar { width: 340px; background: var(--panel); border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+        canvas { width: 100%; height: 160px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 3px; }
+        .fader-group { margin-top: 15px; display: flex; align-items: center; gap: 15px; }
+        .fader-group label { font-size: 10px; opacity: 0.7; min-width: 80px; }
+        input[type=range], select { flex: 1; accent-color: var(--accent); cursor: pointer; background: transparent; }
+        select { border: 1px solid var(--border); padding: 5px; color: var(--text); }
+        select option { background: var(--panel); color: var(--text); }
+        #boot-overlay { position: fixed; inset: 0; background: #050a05; z-index: 999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
-
-<div id="boot-screen">
-    <button onclick="bootSystem()" style="padding: 30px; border: 2px solid var(--neon-blue); color: var(--neon-blue); background: transparent;">[ START CONSOLE V5.9 ]</button>
-</div>
-
+<div id="boot-overlay"><button class="ui-btn active" style="padding: 30px 50px; font-size: 18px;" onclick="initSystem()">INITIALIZE HARDWARE</button></div>
 <header>
-    <div>RADIO UNIT <span id="tx-indicator" style="color:#555">● STANDBY</span></div>
-    <div style="font-size: 11px; color: var(--neon-green);">PERFORMANCE MODE</div>
+    <div style="color: var(--accent);">BROADCAST CONSOLE // V11.0</div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <button class="ui-btn" onclick="document.body.classList.toggle('day-mode')">THEME TOGGLE</button>
+        <span id="tx-status" style="color: #666;">● STANDBY</span>
+    </div>
 </header>
-
-<main>
-    <div id="modules">
-        <div class="module-card">
-            <div class="module-header">
-                <span class="label">01. MIC INPUT</span>
-                <button id="micToggle" onclick="toggleMic()">Activate</button>
+<div class="main-layout">
+    <div id="deck">
+        <div class="module">
+            <div class="module-head"><span style="color: var(--accent);">01.</span> MIC INPUT
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label style="font-size:11px; cursor: pointer;"><input type="checkbox" id="mic-filter-toggle" style="accent-color: var(--accent);" checked onchange="updateMicRoute()"> BPF</label>
+                    <button class="ui-btn" id="mic-btn" onclick="toggleMic()">MIC OFF</button>
+                </div>
             </div>
-            <div class="vu-container"><div id="micVU" class="vu-bar"></div></div>
+            <div class="vu-meter"><div id="mic-vu" class="vu-fill"></div></div>
+            <div class="fader-group">
+                <label>MIC GAIN</label>
+                <input type="range" id="vol-mic" min="0" max="2" step="0.05" value="1">
+            </div>
         </div>
-
-        <div class="module-card">
-            <div class="module-header">
-                <span class="label">02. MORSE ENCODER</span>
-                <div style="display:flex; gap:10px;">
-                    <label class="label" style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="morseLoop"> LOOP</label>
-                    <button id="morseBtn" onclick="handleMorse()">Transmit</button>
+        <div class="module">
+            <div class="module-head"><span style="color: var(--accent);">02.</span> MORSE ENCODER
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label style="font-size:11px; cursor: pointer;"><input type="checkbox" id="m-loop" style="accent-color: var(--accent);"> LOOP</label>
+                    <button class="ui-btn" id="morse-btn" onclick="toggleMorse()">PLAY</button>
+                    <button class="ui-btn danger" onclick="stopMorse()">KILL</button>
                 </div>
             </div>
-            <textarea id="morseText" rows="1" placeholder="Enter message..."></textarea>
-            <div class="control-group">
-                <div class="control-item">
-                    <span class="label">WPM SPEED: <span id="mSpeedVal">20</span></span>
-                    <input type="range" id="morseSpeed" min="5" max="60" value="20" oninput="mSpeedVal.innerText=this.value">
-                </div>
+            <textarea id="morse-text" rows="2">CQ CQ DE XMT9000 K</textarea>
+            <div class="vu-meter"><div id="morse-vu" class="vu-fill"></div></div>
+            <div style="display:flex; gap:20px; margin-top:15px;">
+                <div style="flex:1; display:flex; flex-direction:column; gap:5px;"><label style="font-size:10px; opacity:0.7;">WPM SPEED</label><input type="range" id="m-wpm" min="5" max="50" value="20"></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:5px;"><label style="font-size:10px; opacity:0.7;">TONE (HZ)</label><input type="range" id="m-freq" min="400" max="1200" value="650"></div>
             </div>
-            <div class="vu-container"><div id="morseVU" class="vu-bar"></div></div>
+            <div class="fader-group">
+                <label>WAVEFORM</label>
+                <select id="m-wave"><option value="sine">SINE (CLEAN)</option><option value="square">SQUARE (BUZZ)</option><option value="sawtooth">SAW (HARSH)</option></select>
+            </div>
+            <div class="fader-group"><label>CW GAIN</label><input type="range" id="vol-morse" min="0" max="2" step="0.05" value="1"></div>
         </div>
-
-        <div class="module-card">
-            <div class="module-header">
-                <span class="label">03. VOICE SYNTH (TTS)</span>
-                <div style="display:flex; gap:10px;">
-                    <label class="label" style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="ttsLoop"> LOOP</label>
-                    <button id="ttsBtn" onclick="handleTTS()">Speak</button>
-                </div>
-            </div>
-            <textarea id="speechText" rows="1" placeholder="Enter voice text..."></textarea>
-            <div class="control-group">
-                <div class="control-item">
-                    <span class="label">RATE: <span id="tSpeedVal">1.0</span>x</span>
-                    <input type="range" id="ttsRate" min="0.5" max="2.0" step="0.1" value="1.0" oninput="tSpeedVal.innerText=this.value">
-                </div>
-                <div class="control-item">
-                    <span class="label">PITCH: <span id="tPitchVal">1.0</span></span>
-                    <input type="range" id="ttsPitch" min="0.5" max="2.0" step="0.1" value="1.0" oninput="tPitchVal.innerText=this.value">
-                </div>
-            </div>
-            <div class="vu-container"><div id="speechVU" class="vu-bar"></div></div>
-        </div>
-
-        <div class="module-card">
-            <div class="module-header">
-                <span class="label">04. MEDIA BROADCAST</span>
-                <button id="fileBtn" onclick="toggleFilePlay()">Play File</button>
-            </div>
-            <input type="file" id="fileInput" accept="audio/*,video/*">
-            <div class="vu-container"><div id="fileVU" class="vu-bar"></div></div>
-            <audio id="hiddenAudio" style="display:none"></audio>
+        <div class="module">
+            <div class="module-head"><span style="color: var(--accent);">03.</span> MEDIA PLAYER<button class="ui-btn" id="file-btn" onclick="toggleFile()">LOAD & PLAY</button></div>
+            <input type="file" id="file-input" style="font-size:12px; margin-bottom:15px; color: var(--text);">
+            <div class="vu-meter"><div id="file-vu" class="vu-fill"></div></div>
+            <div class="fader-group"><label>MEDIA GAIN</label><input type="range" id="vol-file" min="0" max="1.5" step="0.05" value="0.8"></div>
         </div>
     </div>
-
     <div id="sidebar">
-        <div class="monitor-box">
-            <div class="label">SIGNAL SPECTRUM</div>
-            <canvas id="freqCanvas"></canvas>
+        <div class="module" style="border-top-color: var(--accent);">
+            <div style="font-size: 10px; font-weight: bold; margin-bottom: 10px; letter-spacing: 1px;">SIGNAL SCOPE</div>
+            <canvas id="scope"></canvas>
         </div>
-
-        <div class="module-card" style="margin-top:auto; border-left-color: var(--neon-red);">
-            <div class="label">MASTER OUTPUT VOLUME</div>
-            <input type="range" id="masterVol" min="0" max="1.5" step="0.01" value="1">
-            <button id="masterTX" style="width:100%; margin-top:10px; padding:15px; font-weight:bold; color:var(--neon-red);" onclick="toggleMasterTX()">XMT OFF (MUTE)</button>
-            <div class="label" style="margin-top:10px">TX POWER LEVEL</div>
-            <div class="vu-container" style="height:20px"><div id="masterVU" class="vu-bar"></div></div>
+        <div class="module" style="margin-top:auto; border: 1px solid var(--danger); border-top: 3px solid var(--danger); background: rgba(217, 83, 79, 0.05);">
+            <button id="master-tx-btn" class="ui-btn danger" style="width:100%; margin-bottom:15px; padding:20px; font-size:14px; letter-spacing: 2px;" onclick="toggleMasterTX()">SYSTEM XMT OFF</button>
+            <div class="fader-group" style="margin-top: 0;"><label style="font-weight:bold; color: var(--danger);">MASTER VOL</label><input type="range" id="vol-master" min="0" max="1.5" step="0.01" value="1"></div>
+            <div class="vu-meter" style="height:15px; border-color:var(--danger); background: rgba(0,0,0,0.5);"><div id="master-vu" class="vu-fill" style="background:var(--danger);"></div></div>
         </div>
     </div>
-</main>
-
+</div>
 <script>
-    let audioCtx, masterGain, txSwitch, analyzer, micAn, morseAn, fileAn;
-    let isTransmitting = false;
-    let morseInterval, ttsInterval;
-
-    function bootSystem() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        masterGain = audioCtx.createGain();
-        analyzer = audioCtx.createAnalyser();
-        analyzer.fftSize = 512;
-        txSwitch = audioCtx.createGain();
-        txSwitch.gain.value = 0; 
-
-        micAn = audioCtx.createAnalyser();
-        morseAn = audioCtx.createAnalyser();
-        fileAn = audioCtx.createAnalyser();
-
-        masterGain.connect(analyzer);
-        analyzer.connect(txSwitch);
-        txSwitch.connect(audioCtx.destination);
-
-        const audioEl = document.getElementById('hiddenAudio');
-        const fileSource = audioCtx.createMediaElementSource(audioEl);
-        fileSource.connect(fileAn);
-        fileAn.connect(masterGain);
-
-        document.getElementById('boot-screen').style.display = 'none';
-        render();
+    let ctx, master, txSwitch, analyzer, limiter, micFilter;
+    let components = { mic: {}, morse: {}, file: {} };
+    let isXmt = false, morseActive = false, morseAbort = null;
+    function initSystem() {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        limiter = ctx.createDynamicsCompressor();
+        limiter.threshold.value = -1.0; limiter.knee.value = 0; limiter.ratio.value = 20;
+        master = ctx.createGain(); txSwitch = ctx.createGain(); txSwitch.gain.value = 0;
+        analyzer = ctx.createAnalyser(); analyzer.fftSize = 512;
+        micFilter = ctx.createBiquadFilter(); micFilter.type = "bandpass"; micFilter.frequency.value = 1200; micFilter.Q.value = 0.6;
+        master.connect(limiter); limiter.connect(txSwitch); txSwitch.connect(analyzer); analyzer.connect(ctx.destination);
+        ['mic','morse','file'].forEach(n => {
+            components[n].gain = ctx.createGain(); components[n].ana = ctx.createAnalyser();
+            components[n].gain.connect(components[n].ana); components[n].ana.connect(master);
+            document.getElementById(`vol-${n}`).oninput = e => components[n].gain.gain.setTargetAtTime(e.target.value, ctx.currentTime, 0.05);
+        });
+        document.getElementById('vol-master').oninput = e => master.gain.value = e.target.value;
+        document.getElementById('boot-overlay').style.display = 'none';
+        updateLoop();
     }
-
     function toggleMasterTX() {
-        isTransmitting = !isTransmitting;
-        const btn = document.getElementById('masterTX');
-        txSwitch.gain.setTargetAtTime(isTransmitting ? 1 : 0, audioCtx.currentTime, 0.05);
-        btn.innerText = isTransmitting ? "XMT ACTIVE (ON)" : "XMT OFF (MUTE)";
-        btn.style.background = isTransmitting ? "var(--neon-red)" : "#222";
-        btn.style.color = isTransmitting ? "#000" : "var(--neon-red)";
-        document.getElementById('tx-indicator').style.color = isTransmitting ? "var(--neon-red)" : "#555";
-        document.getElementById('tx-indicator').innerText = isTransmitting ? "● TRANSMITTING" : "● STANDBY";
+        isXmt = !isXmt;
+        txSwitch.gain.setTargetAtTime(isXmt ? 1 : 0, ctx.currentTime, 0.05);
+        const btn = document.getElementById('master-tx-btn');
+        btn.innerText = isXmt ? "TRANSMITTING" : "SYSTEM XMT OFF";
+        if(isXmt) { btn.style.background = "var(--danger)"; btn.style.color = "#fff"; } 
+        else { btn.style.background = "transparent"; btn.style.color = "var(--danger)"; }
+        const st = document.getElementById('tx-status');
+        st.innerText = isXmt ? "● TRANSMITTING" : "● STANDBY";
+        st.style.color = isXmt ? "var(--danger)" : "#666";
     }
-
-    let micStream = null;
-    function toggleMic() {
-        const btn = document.getElementById('micToggle');
+    function updateMicRoute() {
+        if (!components.mic.src) return;
+        components.mic.src.disconnect();
+        micFilter.disconnect();
+        if (document.getElementById('mic-filter-toggle').checked) {
+            components.mic.src.connect(micFilter);
+            micFilter.connect(components.mic.gain);
+        } else {
+            components.mic.src.connect(components.mic.gain);
+        }
+    }
+    let micStream;
+    async function toggleMic() {
+        const btn = document.getElementById('mic-btn');
         if (!micStream) {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                micStream = stream;
-                const source = audioCtx.createMediaStreamSource(stream);
-                source.connect(micAn);
-                micAn.connect(masterGain);
-                btn.innerText = "Mic ON"; btn.classList.add('on');
-            });
+            try {
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                components.mic.src = ctx.createMediaStreamSource(micStream);
+                updateMicRoute();
+                btn.innerText = "MIC LIVE"; btn.classList.add('active');
+            } catch(e) { alert("Mic access denied or unavailable."); }
         } else {
-            micStream.getTracks().forEach(t => t.stop());
-            micStream = null;
-            btn.innerText = "Activate"; btn.classList.remove('on');
+            micStream.getTracks().forEach(t => t.stop()); micStream = null;
+            if(components.mic.src) components.mic.src.disconnect();
+            micFilter.disconnect();
+            btn.innerText = "MIC OFF"; btn.classList.remove('active');
         }
     }
-
-    function playMorse() {
-        const text = document.getElementById("morseText").value.trim().toLowerCase();
-        if(!text) return;
-        const wpm = document.getElementById("morseSpeed").value;
-        const dotTime = 1.2 / wpm; 
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.frequency.value = 750;
-        osc.connect(g); g.connect(morseAn); morseAn.connect(masterGain);
-        let t = audioCtx.currentTime;
-        g.gain.setValueAtTime(0, t);
-        for(let ch of text) {
-            let code = {a:".-",b:"-...",c:"-.-.",d:"-..",e:".",f:"..-.",g:"--.",h:"....",i:"..",j:".---",k:"-.-",l:".-..",m:"--",n:"-.",o:"---",p:".--.",q:"--.-",r:".-.",s:"...",t:"-",u:"..-",v:"...-",w:".--",x:"-..-",y:"-.--",z:"--..",1:".----",2:"..---",3:"...--",4:"....-",5:".....",6:"-....",7:"--...",8:"---..",9:"----.",0:"-----"," ":" "}[ch] || "";
-            for(let s of code) {
-                let len = (s === ".") ? dotTime : dotTime * 3;
-                g.gain.setValueAtTime(0.8, t);
-                g.gain.setValueAtTime(0, t + len);
-                t += len + dotTime;
+    async function toggleMorse() {
+        if (morseActive) return;
+        morseActive = true; morseAbort = new AbortController();
+        document.getElementById('morse-btn').classList.add('active');
+        const map = {'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 'Z': '--..', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----', ' ': ' '};
+        const runMorse = async () => {
+            while (morseActive && !morseAbort.signal.aborted) {
+                const text = document.getElementById('morse-text').value.toUpperCase();
+                for (let char of text) {
+                    if (morseAbort.signal.aborted) break;
+                    let code = map[char] || '';
+                    for (let sign of code) {
+                        if (morseAbort.signal.aborted) break;
+                        let wpm = document.getElementById('m-wpm').value, dot = 1.2 / wpm, freq = document.getElementById('m-freq').value, type = document.getElementById('m-wave').value, len = (sign === '.') ? dot : dot * 3;
+                        let osc = ctx.createOscillator(), g = ctx.createGain();
+                        osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        osc.connect(g); g.connect(components.morse.gain);
+                        g.gain.setValueAtTime(0, ctx.currentTime);
+                        g.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.005);
+                        g.gain.setValueAtTime(1, ctx.currentTime + len - 0.005);
+                        g.gain.linearRampToValueAtTime(0, ctx.currentTime + len);
+                        osc.start(); osc.stop(ctx.currentTime + len);
+                        await new Promise(r => setTimeout(r, (len + dot) * 1000));
+                    }
+                    if (morseAbort.signal.aborted) break;
+                    await new Promise(r => setTimeout(r, (1.2 / document.getElementById('m-wpm').value) * 2500));
+                }
+                if (!document.getElementById('m-loop').checked) break;
+                await new Promise(r => setTimeout(r, 1000));
             }
-            t += dotTime * 2;
-        }
-        osc.start(); osc.stop(t);
-    }
-
-    function handleMorse() {
-        const btn = document.getElementById('morseBtn');
-        if (document.getElementById('morseLoop').checked) {
-            if (!morseInterval) {
-                playMorse(); morseInterval = setInterval(playMorse, 4000);
-                btn.innerText = "Stop"; btn.classList.add('stop-btn');
-            } else {
-                clearInterval(morseInterval); morseInterval = null;
-                btn.innerText = "Transmit"; btn.classList.remove('stop-btn');
-            }
-        } else { playMorse(); }
-    }
-
-    function handleTTS() {
-        const btn = document.getElementById('ttsBtn');
-        const text = document.getElementById("speechText").value;
-        if(!text.trim() || !isTransmitting) return;
-
-        const speak = () => {
-            if (speechSynthesis.speaking) return;
-            const ut = new SpeechSynthesisUtterance(text);
-            ut.rate = document.getElementById("ttsRate").value;
-            ut.pitch = document.getElementById("ttsPitch").value;
-            speechSynthesis.speak(ut);
-            document.getElementById('speechVU').style.width = "85%";
-            setTimeout(() => document.getElementById('speechVU').style.width = "0%", 1000);
+            stopMorse();
         };
-
-        if (document.getElementById('ttsLoop').checked) {
-            if (!ttsInterval) {
-                speak(); ttsInterval = setInterval(speak, 5000);
-                btn.innerText = "Stop"; btn.classList.add('stop-btn');
-            } else {
-                clearInterval(ttsInterval); ttsInterval = null;
-                btn.innerText = "Speak"; btn.classList.remove('stop-btn');
-            }
-        } else { speak(); }
+        runMorse();
     }
-
-    function toggleFilePlay() {
-        const audioEl = document.getElementById('hiddenAudio');
-        const fileInput = document.getElementById('fileInput');
-        const btn = document.getElementById('fileBtn');
-        if (audioEl.paused) {
-            if (fileInput.files[0]) {
-                audioEl.src = URL.createObjectURL(fileInput.files[0]);
-                audioEl.play();
-                btn.innerText = "Stop"; btn.classList.add('stop-btn');
-            }
-        } else {
-            audioEl.pause();
-            btn.innerText = "Play File"; btn.classList.remove('stop-btn');
+    function stopMorse() { if (morseAbort) morseAbort.abort(); morseActive = false; document.getElementById('morse-btn').classList.remove('active'); }
+    function toggleFile() {
+        const input = document.getElementById('file-input'), btn = document.getElementById('file-btn');
+        if (components.file.audio && !components.file.audio.paused) { components.file.audio.pause(); btn.classList.remove('active'); return; }
+        if (input.files[0]) {
+            if (!components.file.audio) { components.file.audio = new Audio(); let src = ctx.createMediaElementSource(components.file.audio); src.connect(components.file.gain); }
+            components.file.audio.src = URL.createObjectURL(input.files[0]); components.file.audio.play(); btn.classList.add('active');
+            components.file.audio.onended = () => btn.classList.remove('active');
         }
     }
-
-    function render() {
-        updateVU(micAn, 'micVU');
-        updateVU(morseAn, 'morseVU');
-        updateVU(fileAn, 'fileVU');
-        updateVU(analyzer, 'masterVU');
-
-        const freqCanvas = document.getElementById("freqCanvas");
-        const freqCtx = freqCanvas.getContext("2d");
-        const fData = new Uint8Array(analyzer.frequencyBinCount);
-        analyzer.getByteFrequencyData(fData);
-        freqCtx.fillStyle = "#000"; freqCtx.fillRect(0,0,freqCanvas.width,freqCanvas.height);
-        for(let i=0; i<fData.length; i++) {
-            let h = (fData[i]/255) * freqCanvas.height;
-            freqCtx.fillStyle = `hsl(${200 + i/1.5}, 100%, 50%)`;
-            freqCtx.fillRect(i * 3, freqCanvas.height - h, 2, h);
+    function updateLoop() {
+        ['mic','morse','file'].forEach(n => updateVU(components[n].ana, `${n}-vu`));
+        updateVU(analyzer, 'master-vu');
+        const canvas = document.getElementById('scope'), sCtx = canvas.getContext('2d'), data = new Uint8Array(analyzer.frequencyBinCount);
+        analyzer.getByteFrequencyData(data);
+        sCtx.clearRect(0,0,canvas.width, canvas.height);
+        const barWidth = (canvas.width / data.length) * 2.5;
+        const color = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+        for(let i=0; i<data.length; i++) {
+            let h = (data[i]/255) * canvas.height;
+            sCtx.fillStyle = color;
+            sCtx.fillRect(i*barWidth, canvas.height-h, barWidth-1, h);
         }
-        requestAnimationFrame(render);
+        requestAnimationFrame(updateLoop);
     }
-
-    function updateVU(an, id) {
-        if(!an) return;
-        const data = new Uint8Array(an.frequencyBinCount);
-        an.getByteFrequencyData(data);
-        let sum = 0; for(let i=0; i<data.length; i++) sum += data[i];
-        document.getElementById(id).style.width = Math.min(100, (sum/data.length) * 7) + "%";
+    function updateVU(ana, id) {
+        if (!ana) return;
+        const d = new Uint8Array(ana.fftSize); ana.getByteTimeDomainData(d);
+        let max = 0; for(let i=0; i<d.length; i++) { let v = Math.abs(d[i]-128); if(v > max) max = v; }
+        document.getElementById(id).style.width = Math.min(100, (max/128)*100) + "%";
     }
-
-    document.getElementById("masterVol").oninput = e => { if(masterGain) masterGain.gain.value = e.target.value; };
 </script>
 </body>
 </html>
