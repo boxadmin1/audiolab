@@ -2,35 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>BROADCAST CONSOLE V11.0</title>
+    <title>BROADCAST CONSOLE V11.0 - EYE SAFE</title>
     <style>
-        :root { --accent: #00ff41; --bg: #050a05; --panel: #0a140a; --text: #e0e0e0; --border: #1a331a; --danger: #ff3333; }
-        body.day-mode { --accent: #008800; --bg: #e0e8e0; --panel: #f0f5f0; --text: #111; --border: #99b399; --danger: #cc0000; }
-        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { background: #000; color: var(--text); padding: 12px 20px; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; font-weight: bold; letter-spacing: 1px; }
-        body.day-mode header { background: #fff; color: #000; }
+        /* ADJUSTED FOR EYE SAFETY: Reduced saturation and lifted blacks to prevent eye strain */
+        :root { 
+            --accent: #4ade80;  /* Softer Emerald Green (less halation) */
+            --bg: #121412;      /* Off-black (reduces pupil dilation fatigue) */
+            --panel: #1a1f1a;   /* Slightly lighter panel for depth */
+            --text: #d1d5db;    /* Warm grey (easier on the retina than pure white) */
+            --border: #2d362d; 
+            --danger: #f87171;  /* Pastel red (less aggressive) */
+        }
+        
+        /* Softer Day Mode: Cream/Grey base to reduce blue light glare */
+        body.day-mode { 
+            --accent: #059669; 
+            --bg: #f3f4f6; 
+            --panel: #ffffff; 
+            --text: #1f2937; 
+            --border: #d1d5db; 
+            --danger: #dc2626; 
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Courier New', monospace; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+            -webkit-font-smoothing: antialiased; /* Smoother text rendering */
+        }
+
+        header { 
+            background: rgba(0,0,0,0.2); 
+            color: var(--text); 
+            padding: 12px 20px; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-weight: bold; 
+            letter-spacing: 1px; 
+        }
+
+        body.day-mode header { background: #fff; border-bottom: 1px solid #ddd; }
+        
         .main-layout { display: flex; flex: 1; overflow: hidden; }
         #deck { flex: 1; padding: 20px; overflow-y: auto; }
-        .module { background: var(--panel); border: 1px solid var(--border); border-top: 3px solid var(--border); margin-bottom: 20px; padding: 15px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .module-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 12px; padding-bottom: 8px; font-weight: bold; }
-        .ui-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 8px 16px; cursor: pointer; font-family: inherit; font-size: 11px; font-weight: bold; letter-spacing: 1px; border-radius: 3px; transition: all 0.1s; }
-        .ui-btn:hover { background: rgba(0, 255, 65, 0.1); border-color: var(--accent); }
-        .ui-btn:active { transform: translateY(2px); }
-        .ui-btn.active { background: var(--accent) !important; color: #000 !important; border-color: var(--accent); }
+        
+        .module { 
+            background: var(--panel); 
+            border: 1px solid var(--border); 
+            border-top: 3px solid var(--border); 
+            margin-bottom: 20px; 
+            padding: 15px; 
+            border-radius: 6px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+
+        .module-head { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            margin-bottom: 12px; 
+            padding-bottom: 8px; 
+            font-weight: bold; 
+            font-size: 0.9rem;
+        }
+
+        .ui-btn { 
+            background: rgba(255,255,255,0.03); 
+            color: var(--text); 
+            border: 1px solid var(--border); 
+            padding: 8px 16px; 
+            cursor: pointer; 
+            font-family: inherit; 
+            font-size: 11px; 
+            font-weight: bold; 
+            letter-spacing: 1px; 
+            border-radius: 4px; 
+            transition: all 0.2s; 
+        }
+
+        .ui-btn:hover { background: rgba(74, 222, 128, 0.1); border-color: var(--accent); }
+        .ui-btn.active { background: var(--accent) !important; color: #064e3b !important; border-color: var(--accent); }
         .ui-btn.danger { color: var(--danger); border-color: var(--danger); }
         .ui-btn.danger:hover { background: var(--danger); color: #fff; }
-        textarea { width: 100%; background: rgba(0,0,0,0.3); color: var(--accent); border: 1px solid var(--border); padding: 12px; box-sizing: border-box; font-family: inherit; font-size: 14px; border-radius: 3px; outline: none; }
+
+        textarea { 
+            width: 100%; 
+            background: rgba(0,0,0,0.2); 
+            color: var(--accent); 
+            border: 1px solid var(--border); 
+            padding: 12px; 
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: 14px; 
+            border-radius: 4px; 
+            outline: none; 
+            line-height: 1.5;
+        }
+
         body.day-mode textarea { background: #fff; color: #000; }
-        .vu-meter { height: 8px; background: rgba(0,0,0,0.5); width: 100%; margin: 10px 0; border: 1px solid var(--border); position: relative; overflow: hidden; border-radius: 2px; }
-        .vu-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.05s; }
+
+        .vu-meter { height: 8px; background: rgba(0,0,0,0.4); width: 100%; margin: 10px 0; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .vu-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.08s ease-out; }
+        
         #sidebar { width: 340px; background: var(--panel); border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
-        canvas { width: 100%; height: 160px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 3px; }
+        canvas { width: 100%; height: 160px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; }
+        
         .fader-group { margin-top: 15px; display: flex; align-items: center; gap: 15px; }
-        .fader-group label { font-size: 10px; opacity: 0.7; min-width: 80px; }
+        .fader-group label { font-size: 10px; opacity: 0.7; min-width: 80px; text-transform: uppercase; }
+        
         input[type=range], select { flex: 1; accent-color: var(--accent); cursor: pointer; background: transparent; }
-        select { border: 1px solid var(--border); padding: 5px; color: var(--text); }
-        select option { background: var(--panel); color: var(--text); }
-        #boot-overlay { position: fixed; inset: 0; background: #050a05; z-index: 999; display: flex; align-items: center; justify-content: center; }
+        select { border: 1px solid var(--border); padding: 5px; color: var(--text); border-radius: 4px; }
+        
+        #boot-overlay { position: fixed; inset: 0; background: #121412; z-index: 999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -97,6 +188,7 @@
     </div>
 </div>
 <script>
+    /* Javascript logic preserved exactly as requested */
     let ctx, master, txSwitch, analyzer, limiter, micFilter;
     let components = { mic: {}, morse: {}, file: {} };
     let isXmt = false, morseActive = false, morseAbort = null;
